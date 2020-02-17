@@ -48,19 +48,17 @@ public class MainController {
 		tag.setSubject(subject);
 		return this.mS.createTag(tag);
 	}
-	
+
 	@PostMapping("/api/answers")
 	public Answer createAnswer(@RequestParam("answer") String answer) {
-		Answer a= new Answer();
+		Answer a = new Answer();
 		a.setAnswer(answer);
 		return this.mS.createAnswer(a);
 	}
 
 	@PostMapping("/api/someroute")
-	public TagQuestion createTagQuestion(
-			@RequestParam("questionId") Long questionId,
-			@RequestParam("tagId") Long tagId
-			) {
+	public TagQuestion createTagQuestion(@RequestParam("questionId") Long questionId,
+			@RequestParam("tagId") Long tagId) {
 		Question question = this.mS.getQuestionById(questionId);
 		Tag tag = this.mS.getTagById(tagId);
 		TagQuestion tq = new TagQuestion();
@@ -68,58 +66,65 @@ public class MainController {
 		tq.setTag(tag);
 		return this.mS.createTagQuestion(tq);
 	}
-	
+
 	@GetMapping("/questions")
 	public String dashboard(Model model) {
 		List<Question> allQuestions = this.mS.allQuestions();
 		model.addAttribute("allQuestions", allQuestions);
-		
+
 		return "/questions/dashboard.jsp";
 	}
+
 	@GetMapping("/questions/new")
 	public String newQuestion(@ModelAttribute("newQuestion") Question question) {
 		return "/questions/newQuestion.jsp";
 	}
-	
+
 	@PostMapping("/questions/new")
-	public String createQuestion(@Valid @ModelAttribute("newQuestion") Question question,BindingResult result,RedirectAttributes redirectAttributes) {
-		if(result.hasErrors()) {
+	public String createQuestion(@Valid @ModelAttribute("newQuestion") Question question, BindingResult result,
+			RedirectAttributes redirectAttributes) {
+		if (result.hasErrors()) {
 			return "/questions/newQuestion.jsp";
 		}
 		this.mS.createQuestion(question);
 		redirectAttributes.addFlashAttribute("success", "you create a question!");
 		return "redirect:/questions/new";
 	}
-	
+
 	@GetMapping("/tags/new")
 	public String newTag(@ModelAttribute("newTag") Tag tag) {
-	    return "/tags/newTag.jsp";
+		return "/tags/newTag.jsp";
 	}
 
 	@PostMapping("/tags/new")
-	public String createQuestion(@Valid @ModelAttribute("newTag") Tag tag,BindingResult result,RedirectAttributes redirectAttributes) {
-	    if(result.hasErrors()) {
-	        return "/tags/newTag.jsp";
-	    }
-	    this.mS.createTag(tag);
-	    redirectAttributes.addFlashAttribute("success", "you create a tag!");
-	    return "redirect:/tags/new";
+	public String createQuestion(@Valid @ModelAttribute("newTag") Tag tag, BindingResult result,
+			RedirectAttributes redirectAttributes) {
+		if (result.hasErrors()) {
+			return "/tags/newTag.jsp";
+		}
+		this.mS.createTag(tag);
+		redirectAttributes.addFlashAttribute("success", "you create a tag!");
+		return "redirect:/tags/new";
 	}
+
 	@GetMapping("/questions/{id}")
-	public String displayQuestion(@PathVariable("id") Long id, Model model) {
+	public String displayQuestion(@Valid @ModelAttribute("newAnswer") Answer newAnswer, @PathVariable("id") Long id, Model model) {
 		Question question = this.mS.getQuestionById(id);
 		model.addAttribute("question", question);
+		List<Answer> answers = question.getAnswers();
+		model.addAttribute("answers", answers);
 		List<Tag> allTags = this.mS.allTags();
 		model.addAttribute("allTags", allTags);
 		List<Tag> qt = question.getTags();
 		model.addAttribute("qt", qt);
 		model.addAttribute("questionId", id);
-		
-		return "/questions/displayQuestion.jsp";
+
+		return "/questions/questionProfile.jsp";
 	}
+
 	@PostMapping("/questions/{id}")
-	public String createRelationship(
-			@PathVariable("id") Long questionId, @RequestParam("tagId")Long tagId,Model model){
+	public String createRelationship(@Valid @ModelAttribute("newAnswer") Answer newAnswer,
+			@PathVariable("id") Long questionId, @RequestParam("tagId") Long tagId, Model model, BindingResult result) {
 		Question question = this.mS.getQuestionById(questionId);
 		Tag tag = this.mS.getTagById(tagId);
 		TagQuestion tq = new TagQuestion();
@@ -128,7 +133,7 @@ public class MainController {
 		this.mS.createTagQuestion(tq);
 		return "redirect:/questions/{id}";
 	}
-	
+
 	@GetMapping("/tags/{id}")
 	public String displayTag(@PathVariable("id") Long id, Model model) {
 		Tag tag = this.mS.getTagById(id);
@@ -138,13 +143,13 @@ public class MainController {
 		List<Question> tq = tag.getQuestions();
 		model.addAttribute("tq", tq);
 		model.addAttribute("TagId", id);
-		
+
 		return "/tags/displayTag.jsp";
 	}
-	
+
 	@PostMapping("/tags/{id}")
-	public String createRelationship2(
-			@PathVariable("id") Long tagId, @RequestParam("questionId")Long questionId,Model model){
+	public String createRelationship2(@PathVariable("id") Long tagId, @RequestParam("questionId") Long questionId,
+			Model model) {
 		Tag tag = this.mS.getTagById(tagId);
 		Question question = this.mS.getQuestionById(questionId);
 		TagQuestion tq = new TagQuestion();
@@ -154,4 +159,3 @@ public class MainController {
 		return "redirect:/tags/{id}";
 	}
 }
-	
